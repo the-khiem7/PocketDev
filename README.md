@@ -1,61 +1,67 @@
-# Elastic AI Development Containers
+# PocketDev
 
-## Proposal & Repository Vision
+## Portable AI Development Environment in Containers
 
-## 1. Purpose
+## 1. Vision
 
-Repository này tồn tại với một mục tiêu rất đơn giản:
+PocketDev là một môi trường phát triển phần mềm chạy hoàn toàn trong container, cho phép bạn code, build và chạy project từ bất kỳ thiết bị nào, kể cả điện thoại, mà không cần cài đặt toolchain trên máy cá nhân.
 
-> Cung cấp các Docker images được build sẵn và một docker-compose stack để chạy môi trường AI coding gồm OpenChamber, OpenCode, 9Router và DevContainer trên các hệ điều hành container-centric như ZimaOS.
+Ý tưởng cốt lõi của PocketDev rất đơn giản:
 
-Nhiều open-source project không cung cấp Docker image chính thức hoặc image không phù hợp với môi trường container-only. Repository này đóng vai trò **image distribution và compose stack** để có thể pull và chạy toàn bộ hệ thống ngay lập tức.
+> Development environment không nằm trên laptop, mà nằm trên server.
+> Bạn chỉ cần mở trình duyệt hoặc điện thoại để làm việc.
 
-Repository này **không phải một phần mềm mới**, mà là một **container image collection + runtime stack**.
-
----
-
-# 2. Goal
-
-Mục tiêu của repository:
-
-* Build Docker images cho:
-
-  * OpenCode
-  * OpenChamber
-  * 9Router
-  * DevContainer CLI / Runner
-* Push images lên GHCR
-* Cung cấp docker-compose để chạy full stack
-* Cho phép chạy trên ZimaOS / homelab / server Docker
-* Không yêu cầu host cài toolchain (Node, .NET, Python, Go…)
-* Cho phép AI clone repo và chạy project bằng DevContainer
-
-Mục tiêu cuối cùng:
-
-```text
-docker compose up -d
-```
-
-Và hệ thống AI coding environment chạy ngay.
+PocketDev không phải là một IDE mới, cũng không phải một AI platform mới.
+PocketDev chỉ đơn giản là **một container stack để chạy AI coding environment**.
 
 ---
 
-# 3. System Overview
+# 2. Purpose of This Repository
 
-Stack container sẽ gồm:
+Repository này tồn tại để giải quyết một vấn đề thực tế:
+
+Nhiều open-source project như:
+
+* OpenCode
+* OpenChamber
+* 9Router
+* DevContainer CLI
+
+không cung cấp Docker image chính thức hoặc image không phù hợp với môi trường container-only như ZimaOS.
+
+Repository này sẽ:
+
+* Build Docker images từ source
+* Publish images lên GHCR
+* Cung cấp docker-compose stack
+* Cho phép chạy toàn bộ AI coding environment bằng một lệnh docker compose
+
+Repository này **không phát triển OpenCode, OpenChamber hay 9Router**, mà chỉ cung cấp container runtime environment cho chúng.
+
+---
+
+# 3. What PocketDev Provides
+
+PocketDev cung cấp các Docker images sau:
+
+| Image                  | Purpose                                |
+| ---------------------- | -------------------------------------- |
+| pocketdev-opencode     | AI coding agent runtime                |
+| pocketdev-openchamber  | Web UI                                 |
+| pocketdev-9router      | LLM router (OpenAI compatible gateway) |
+| pocketdev-devcontainer | DevContainer CLI runner                |
+| pocketdev-base         | Base runtime environment (optional)    |
+
+Tất cả images sẽ được publish lên GHCR để có thể pull trực tiếp.
+
+---
+
+# 4. Runtime Architecture
+
+Kiến trúc runtime của PocketDev:
 
 ```text
-OpenChamber
-OpenCode
-9Router
-DevContainer Runner
-Projects Volume
-```
-
-Kiến trúc runtime:
-
-```text
-User (Browser / Phone)
+Browser / Phone
         |
    OpenChamber
         |
@@ -67,29 +73,22 @@ User (Browser / Phone)
         |
      Projects Folder
         |
- DevContainer (per project)
+   DevContainer CLI
         |
       Docker
         |
-      ZimaOS
+      Server / ZimaOS
 ```
 
----
+Giải thích:
 
-# 4. How the System Is Intended to Work
-
-Workflow dự kiến:
-
-```text
-1. User mở OpenChamber
-2. User prompt AI tạo project
-3. OpenCode clone hoặc tạo repo vào /projects
-4. Nếu repo có .devcontainer/devcontainer.json
-       → devcontainer up
-5. Container project environment start
-6. dotnet run / npm run dev chạy trong container
-7. Port forward ra ngoài
-```
+* OpenChamber: giao diện web
+* OpenCode: AI agent viết code
+* 9Router: LLM router
+* Projects: nơi lưu source code
+* DevContainer: chạy environment cho từng project
+* Docker: runtime
+* ZimaOS / server: host
 
 Host không cần cài:
 
@@ -102,76 +101,62 @@ Host không cần cài:
 * pnpm
 * build tools
 
-Tất cả chạy trong DevContainer.
+Tất cả toolchain chạy trong DevContainer.
 
 ---
 
-# 5. Repository Responsibilities
+# 5. Workflow
 
-Repository này chỉ làm các việc sau:
-
-| Responsibility                   | Description                    |
-| -------------------------------- | ------------------------------ |
-| Build Docker images              | Từ source open-source projects |
-| Publish GHCR images              | Central image registry         |
-| Provide docker compose           | Run full stack                 |
-| Provide example configs          | Cho OpenCode / provider        |
-| Maintain compatibility           | Giữa các container             |
-| Provide base runtime environment | Cho AI coding                  |
-
-Repository này **không phát triển OpenCode, OpenChamber hoặc 9Router**, chỉ build image và cung cấp runtime stack.
-
----
-
-# 6. Container Images
-
-GHCR sẽ chứa các image:
+Workflow dự kiến khi sử dụng PocketDev:
 
 ```text
-ghcr.io/<owner>/elastic-opencode
-ghcr.io/<owner>/elastic-openchamber
-ghcr.io/<owner>/elastic-9router
-ghcr.io/<owner>/elastic-devcontainer-cli
+1. User mở OpenChamber từ trình duyệt hoặc điện thoại
+2. User prompt AI tạo project
+3. OpenCode tạo hoặc clone repository vào /projects
+4. Nếu repository có .devcontainer/devcontainer.json
+       → devcontainer up
+5. DevContainer container start
+6. dotnet run / npm run dev chạy trong container
+7. Port được forward ra ngoài
+8. User truy cập ứng dụng qua browser
 ```
 
-Các image này sẽ được build từ source open-source tương ứng và publish để có thể pull trực tiếp trong docker compose.
+Toàn bộ quá trình không cần laptop có toolchain.
 
 ---
 
-# 7. Docker Compose Stack
+# 6. Docker Compose Goal
 
-Docker compose sẽ chạy các service sau:
+PocketDev được thiết kế để chạy bằng một docker compose duy nhất:
 
-| Service         | Purpose                        |
-| --------------- | ------------------------------ |
-| openchamber     | Web UI                         |
-| opencode        | AI coding agent                |
-| router          | LLM router (OpenAI compatible) |
-| devcontainer    | DevContainer CLI runner        |
-| projects volume | Source code storage            |
+```bash
+docker compose up -d
+```
 
-Compose stack cho phép:
+Sau khi chạy compose:
 
-* AI tạo project
-* AI clone repo
-* DevContainer chạy project
-* Port forward
-* Persistent project storage
+* OpenChamber UI hoạt động
+* OpenCode agent hoạt động
+* 9Router hoạt động
+* DevContainer runner sẵn sàng
+* Projects volume mount sẵn
+
+Hệ thống sẵn sàng để AI tạo project và chạy project.
 
 ---
 
-# 8. Directory Structure (Proposed)
+# 7. Repository Structure (Proposed)
 
-Repository structure đề xuất:
+Cấu trúc repository đề xuất:
 
 ```text
-elastic-ai-containers/
+pocketdev/
 │
 ├── images/
 │   ├── opencode/
 │   ├── openchamber/
 │   ├── 9router/
-│   └── devcontainer-cli/
+│   └── devcontainer/
 │
 ├── compose/
 │   └── docker-compose.yml
@@ -183,51 +168,75 @@ elastic-ai-containers/
     └── build-images.yml
 ```
 
+Repository sẽ build images và push lên GHCR.
+
 ---
 
-# 9. Philosophy
+# 8. GHCR Images
 
-Repository này dựa trên các nguyên tắc:
+Images sẽ được publish theo naming convention:
 
-1. Host không cần toolchain
-2. Tất cả chạy bằng container
-3. AI coding environment phải reproducible
-4. Dev environment phải containerized
-5. Docker compose phải chạy full stack
-6. Images phải có sẵn trên GHCR
-7. ZimaOS / homelab phải chạy được
-8. DevContainer là runtime environment cho project
-9. OpenCode là AI developer
-10. OpenChamber là UI
+```text
+ghcr.io/<owner>/pocketdev-opencode
+ghcr.io/<owner>/pocketdev-openchamber
+ghcr.io/<owner>/pocketdev-9router
+ghcr.io/<owner>/pocketdev-devcontainer
+```
+
+Docker compose sẽ pull trực tiếp từ GHCR.
+
+---
+
+# 9. Design Philosophy
+
+PocketDev dựa trên các nguyên tắc sau:
+
+1. Development environment phải containerized
+2. Host không cần toolchain
+3. Projects chạy trong DevContainer
+4. AI agent có thể tạo và chạy project
+5. Tất cả phải chạy bằng docker compose
+6. Images phải build sẵn và publish lên GHCR
+7. Hệ thống phải chạy được trên ZimaOS / homelab
+8. Development environment phải reproducible
+9. Có thể code từ bất kỳ thiết bị nào
+10. Development environment phải “portable”
 
 ---
 
 # 10. One Sentence Summary
 
-Có thể tóm tắt repository này bằng một câu:
+PocketDev có thể được mô tả bằng một câu:
 
-> A container image collection and docker-compose stack for running an AI coding environment with OpenChamber, OpenCode, 9Router and DevContainer on container-only systems like ZimaOS.
+> PocketDev is a container-based AI development environment that allows you to code, build and run projects from anywhere, even from your phone, without installing any toolchain on your local machine.
 
 ---
 
-# 11. Final Concept Diagram
+# 11. Final Concept
 
 ```text
-Browser / Phone
-       |
-  OpenChamber
-       |
-    OpenCode
-       |
-     9Router
-       |
-      LLM
-       |
-    Projects
-       |
- DevContainer
-       |
-     Docker
-       |
-     ZimaOS
+Phone / Browser
+        |
+   PocketDev Stack
+        |
+   OpenChamber
+        |
+     OpenCode
+        |
+      9Router
+        |
+       LLM
+        |
+     Projects
+        |
+   DevContainer
+        |
+      Docker
+        |
+      Server
 ```
+
+PocketDev không phải IDE, không phải platform, không phải framework.
+PocketDev chỉ đơn giản là:
+
+> Một development environment nằm trên server để bạn có thể code ở bất cứ đâu.

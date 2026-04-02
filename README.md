@@ -60,35 +60,33 @@ Tất cả images sẽ được publish lên GHCR để có thể pull trực ti
 
 Kiến trúc runtime của PocketDev:
 
-```text
-Browser / Phone
-        |
-   OpenChamber
-        |
-     OpenCode
-        |
-      9Router
-        |
-       LLM
-        |
-     Projects Folder
-        |
-   DevContainer CLI
-        |
-      Docker
-        |
-      Server / ZimaOS
+```mermaid
+graph TD;
+    A[Browser / Phone] --> B[OpenChamber];
+    B --> C[OpenCode];
+    C --> D[9Router];
+    D --> E[LLM];
+    E --> F[Projects Folder];
+    F --> G[DevContainer CLI];
+    G --> H[Docker];
+    H --> I[Server / ZimaOS];
 ```
 
-Giải thích:
+## Kiến trúc Runtime Chi Tiết
 
-* OpenChamber: giao diện web
-* OpenCode: AI agent viết code
-* 9Router: LLM router
-* Projects: nơi lưu source code
-* DevContainer: chạy environment cho từng project
-* Docker: runtime
-* ZimaOS / server: host
+Dưới đây là bảng chi tiết các thành phần trong kiến trúc runtime của PocketDev:
+
+| Thành Phần | Mô Tả | Chức Năng Chính | Dependencies | Ghi Chú |
+|-------------|--------|------------------|--------------|---------|
+| **Browser / Phone** | Giao diện người dùng cuối | Truy cập PocketDev từ bất kỳ thiết bị nào | Không có | Điểm khởi đầu của workflow |
+| **OpenChamber** | Giao diện web chính | Cung cấp UI để tương tác với AI coding environment, quản lý projects và workflows | Browser/Phone | Frontend portal cho toàn bộ hệ thống |
+| **OpenCode** | AI agent viết code | Tự động tạo, chỉnh sửa và quản lý code dựa trên prompts từ người dùng | OpenChamber, 9Router | Core AI component cho code generation |
+| **9Router** | LLM router | Điều hướng và quản lý các yêu cầu đến LLM models, tương thích OpenAI API | OpenCode, LLM | Gateway cho AI services |
+| **LLM** | Large Language Model | Cung cấp khả năng AI để xử lý ngôn ngữ tự nhiên và code generation | 9Router | External AI service (OpenAI, etc.) |
+| **Projects Folder** | Thư mục lưu trữ code | Chứa tất cả source code của các projects được tạo bởi AI | OpenCode, DevContainer | Persistent storage cho code |
+| **DevContainer CLI** | Công cụ chạy container | Khởi tạo và quản lý development containers cho từng project | Projects Folder, Docker | Tự động setup toolchain |
+| **Docker** | Container runtime | Chạy tất cả các services trong isolated containers | DevContainer CLI | Core containerization platform |
+| **Server / ZimaOS** | Host environment | Máy chủ vật lý hoặc ZimaOS chạy toàn bộ stack | Docker | Infrastructure layer |
 
 Host không cần cài:
 
@@ -213,29 +211,18 @@ PocketDev có thể được mô tả bằng một câu:
 ---
 
 # 11. Final Concept
-
-```text
-Phone / Browser
-        |
-   PocketDev Stack
-        |
-   OpenChamber
-        |
-     OpenCode
-        |
-      9Router
-        |
-       LLM
-        |
-     Projects
-        |
-   DevContainer
-        |
-      Docker
-        |
-      Server
+```mermaid
+graph TD;
+    A[Phone / Browser] --> B[PocketDev Stack];
+    B --> C[OpenChamber];
+    C --> D[OpenCode];
+    D --> E[9Router];
+    E --> F[LLM];
+    F --> G[Projects];
+    G --> H[DevContainer];
+    H --> I[Docker];
+    I --> J[Server];
 ```
-
 PocketDev không phải IDE, không phải platform, không phải framework.
 PocketDev chỉ đơn giản là:
 
